@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:expandable_text/expandable_text.dart';
+import 'package:hive/hive.dart';
 import 'package:todo_app/constant/my_colors.dart';
+import 'package:todo_app/model/todo_list_model.dart';
+import 'package:todo_app/view/todo_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,18 +23,60 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: 12,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.all(4.0),
+        body: SizedBox(
+          height: Get.height,
+          child: listview(),
+        ),
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.miniStartFloat,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: MyColors.flobuttoncolor,
+          onPressed: (() {
+            Get.to(const TodoScreen());
+          }),
+          child: const Icon(Icons.add),
+        ));
+  }
+
+  Widget listview() {
+    var box = Hive.box("Todo_List");
+    return ListView.builder(
+      itemCount: box.values.length,
+      itemBuilder: (context, index) {
+        TodoListModel? res = box.getAt(index);
+        return Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Dismissible(
+            background: Container(
+              decoration: const BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
+              width: Get.width / 1.04,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.delete,
+                      size: 35,
+                      color: Colors.white,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            key: UniqueKey(),
+            onDismissed: (direction) {
+              box.deleteAt(index);
+            },
+            child: Center(
               child: Container(
                 // height: Get.height / 6,
-                width: Get.width / 1.03,
+                width: Get.width / 1.04,
                 decoration: BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                    color: MyColors.listcolor,
+                    borderRadius: const BorderRadius.all(Radius.circular(20))),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -42,35 +85,30 @@ class HomeScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
-                            "mohammad",
+                            res!.title.toString(),
                             textDirection: TextDirection.rtl,
                             overflow: TextOverflow.visible,
                           ),
                         ],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 12,
                       ),
                       ExpandableText(
-                        expandText: "sho",
-                        collapseText: "uu",
+                        expandText: "بیشتر",
+                        collapseText: "کمتر",
                         maxLines: 2,
-                        "روی پیوند نمایش بیشتر در پایان یا خود متن، آن را گسترش داد. پس از گسترش متن، نمی توان آن را دوباره جمع کردروی پیوند نمایش بیشتر در پایان یا خود متن، آن را گسترش داد. پس از گسترش متن، نمی توان آن را دوباره جمع کردروی پیوند نمایش بیشتر در پایان یا خود متن، آن را گسترش داد. پس از گسترش متن، نمی توان آن را دوباره جمع کرد",
+                        res.text.toString(),
                         textDirection: TextDirection.rtl,
                       )
                     ],
                   ),
                 ),
               ),
-            );
-          },
-        ),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniStartFloat,
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: MyColors.bgflobuttoncolor,
-          onPressed: (() {}),
-          child: Icon(Icons.add),
-        ));
+            ),
+          ),
+        );
+      },
+    );
   }
 }
